@@ -1,0 +1,7 @@
+# Parámetros reutilizables
+app_name:           socialdevs-frontend
+argo_namespace:     argocd
+destination_ns:     default
+gitops_repo:        https://github.com/vhgalvez/socialdevs-gitops
+gitops_path:        apps/socialdevs-frontend
+gitops_revision:    HEAD

@@ -1,0 +1,32 @@
+---
+- name: ⨜️ Aplicar manifiesto de la app {{ app_name }} en ArgoCD
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../vars/main.yml
+
+  vars:
+    manifest_tmp: "/tmp/{{ app_name }}-bootstrap.yaml"
+
+  tasks:
+    - name: 📝 Renderizar manifest de la aplicación
+      template:
+        src: ../templates/bootstrap-application.yaml.j2
+        dest: "{{ manifest_tmp }}"
+
+    - name: 🚀 kubectl apply
+      command: kubectl apply -f "{{ manifest_tmp }}"
+      register: apply_out
+      changed_when: "'created' in apply_out.stdout or 'configured' in apply_out.stdout"
+
+    - name: ✅ Verificar que la Application existe
+      command: >
+        kubectl -n {{ argo_namespace }} get application {{ app_name }} -o wide
+      register: verify_out
+      changed_when: false
+
+    - name: ℹ️ Mostrar estado
+      debug:
+        msg: "{{ verify_out.stdout }}"
