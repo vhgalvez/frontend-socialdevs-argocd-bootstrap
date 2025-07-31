@@ -21,7 +21,7 @@
         version
       register: k8s_check
       changed_when: false
-      failed_when: k8s_check.rc != 0 or '"serverVersion"' not in k8s_check.stdout
+      failed_when: k8s_check.rc != 0 or 'Server Version' not in k8s_check.stdout
 
     # 2️⃣ Renderizar plantilla Jinja2 a archivo temporal
     - name: 📝 Renderizar manifest de la aplicación
