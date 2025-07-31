@@ -1,52 +1,44 @@
+# playbooks/deploy_socialdevs_app.yml
 ---
 - name: ⨜️  Aplicar manifiesto de la app {{ app_name }} en Argo CD
   hosts: localhost
-  connection: local          # ← evita SSH
+  connection: local
   gather_facts: false
   become: false
 
-  # ───────────────────────────────────────────────
-  # Carga de variables globales
-  # ───────────────────────────────────────────────
   vars_files:
-    - ../vars/main.yml       # (contiene kubectl_path, kubeconfig_path, etc.)
+    - ../vars/main.yml
 
-  # ───────────────────────────────────────────────
-  # Variables internas
-  # ───────────────────────────────────────────────
   vars:
     manifest_tmp: "/tmp/{{ app_name }}-bootstrap.yaml"
 
   tasks:
-    # 1️⃣  Verificar que kubectl se conecta al clúster
+    # 1️⃣ Verificar que kubectl se conecta al clúster
     - name: 🧪 Verificar conexión a clúster Kubernetes
       command: >
         {{ kubectl_path }}
         --kubeconfig {{ kubeconfig_path }}
-        version --short
+        version
       register: k8s_check
       changed_when: false
-      # Falla si el comando no devuelve versión de servidor
-      failed_when: k8s_check.rc != 0 or
-                   "'Server Version'" not in k8s_check.stdout
+      failed_when: k8s_check.rc != 0 or '"serverVersion"' not in k8s_check.stdout
 
-    # 2️⃣  Renderizar la plantilla Jinja2 → YAML temporal
+    # 2️⃣ Renderizar plantilla Jinja2 a archivo temporal
     - name: 📝 Renderizar manifest de la aplicación
       template:
         src: ../templates/bootstrap-application.yaml.j2
         dest: "{{ manifest_tmp }}"
 
-    # 3️⃣  kubectl apply
+    # 3️⃣ Aplicar el manifiesto con kubectl
     - name: 🚀 Aplicar manifiesto (kubectl apply)
       command: >
         {{ kubectl_path }}
         --kubeconfig {{ kubeconfig_path }}
         apply -f {{ manifest_tmp }}
       register: apply_out
-      changed_when: "'created' in apply_out.stdout or
-                     'configured' in apply_out.stdout"
+      changed_when: "'created' in apply_out.stdout or 'configured' in apply_out.stdout"
 
-    # 4️⃣  Comprobar que la Application quedó creada
+    # 4️⃣ Verificar estado de la Application
     - name: ✅ Verificar Application en Argo CD
       command: >
         {{ kubectl_path }}
@@ -56,7 +48,7 @@
       register: verify_out
       changed_when: false
 
-    # 5️⃣  Mostrar estado final – útil para validar desde CI
+    # 5️⃣ Mostrar salida final para debugging
     - name: ℹ️ Mostrar estado
       debug:
         msg: "{{ verify_out.stdout }}"

@@ -1,3 +1,4 @@
+# vars\main.yml
 # Parámetros reutilizables
 app_name:           socialdevs-frontend
 argo_namespace:     argocd
