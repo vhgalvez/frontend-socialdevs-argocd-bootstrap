@@ -5,3 +5,8 @@ destination_ns:     default
 gitops_repo:        https://github.com/vhgalvez/socialdevs-gitops
 gitops_path:        apps/socialdevs-frontend
 gitops_revision:    HEAD
+
+# ── Rutas de herramientas locales ────────────────────────────────────────────
+kubeconfig_path: "/home/victory/.kube/config"
+kubectl_path:    "/usr/local/bin/kubectl"
+kubeseal_path:   "/usr/local/bin/kubeseal"
